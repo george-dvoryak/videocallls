@@ -1,0 +1,27 @@
+{
+  "name": "videocallls-mvp",
+  "version": "0.1.0",
+  "description": "Minimal WebRTC video/audio call MVP with Node.js signaling server and browser frontend.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "NODE_ENV=development node server.js"
+  },
+  "keywords": [
+    "webrtc",
+    "video-calls",
+    "audio-calls",
+    "signaling",
+    "mvp"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  }
+}
+
+

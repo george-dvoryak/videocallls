@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>VideoCallls MVP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        color-scheme: dark light;
+        --bg: #050810;
+        --panel: #0d101a;
+        --accent: #4f46e5;
+        --accent-soft: rgba(79, 70, 229, 0.12);
+        --border: #1f2937;
+        --text: #e5e7eb;
+        --text-soft: #9ca3af;
+        --danger: #ef4444;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+          sans-serif;
+      }
+
+      body {
+        min-height: 100vh;
+        background: radial-gradient(circle at top, #1f2933 0, #020617 40%, #000 100%);
+        color: var(--text);
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        padding: 24px;
+      }
+
+      .shell {
+        width: 100%;
+        max-width: 1120px;
+        background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(2, 6, 23, 0.98));
+        border-radius: 24px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        box-shadow:
+          0 18px 60px rgba(15, 23, 42, 0.75),
+          0 0 0 1px rgba(15, 23, 42, 0.9);
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1.45fr);
+        overflow: hidden;
+      }
+
+      @media (max-width: 900px) {
+        body {
+          padding: 12px;
+        }
+
+        .shell {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .pane-meta {
+          order: -1;
+          border-left: none;
+          border-bottom: 1px solid var(--border);
+        }
+      }
+
+      .pane-video {
+        position: relative;
+        padding: 18px 18px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .pane-meta {
+        padding: 18px;
+        border-left: 1px solid var(--border);
+        background: radial-gradient(circle at top left, rgba(79, 70, 229, 0.12), transparent 55%);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        padding: 4px 10px 4px 5px;
+        background: radial-gradient(circle at top left, rgba(52, 211, 153, 0.2), rgba(15, 23, 42, 0.95));
+        border: 1px solid rgba(52, 211, 153, 0.4);
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .badge-dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #bbf7d0, #22c55e);
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
+      }
+
+      .title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #e5e7eb;
+      }
+
+      .subtitle {
+        font-size: 12px;
+        color: var(--text-soft);
+      }
+
+      .room-input-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 12px 0 8px;
+        align-items: center;
+      }
+
+      .field-shell {
+        flex: 1 1 160px;
+        position: relative;
+      }
+
+      .field-label {
+        font-size: 11px;
+        color: var(--text-soft);
+        margin-bottom: 4px;
+      }
+
+      .input {
+        width: 100%;
+        border-radius: 999px;
+        border: 1px solid rgba(75, 85, 99, 0.9);
+        background: radial-gradient(circle at top, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.96));
+        padding: 8px 12px;
+        color: var(--text);
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      }
+
+      .input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.7);
+      }
+
+      .checkbox-row {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--text-soft);
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .btn-primary {
+        border: none;
+        border-radius: 999px;
+        padding: 9px 16px;
+        background: radial-gradient(circle at top left, #6366f1, #4f46e5);
+        color: white;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow:
+          0 10px 30px rgba(79, 70, 229, 0.55),
+          0 0 0 1px rgba(129, 140, 248, 0.75);
+        transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+        white-space: nowrap;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-0.5px);
+        box-shadow:
+          0 14px 40px rgba(79, 70, 229, 0.7),
+          0 0 0 1px rgba(129, 140, 248, 1);
+      }
+
+      .btn-primary:active {
+        transform: translateY(0.5px) scale(0.99);
+        box-shadow: 0 6px 18px rgba(79, 70, 229, 0.75);
+      }
+
+      .btn-secondary {
+        border-radius: 999px;
+        border: 1px solid rgba(75, 85, 99, 0.9);
+        background: radial-gradient(circle at top, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.98));
+        color: var(--text-soft);
+        font-size: 12px;
+        padding: 7px 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+      }
+
+      .btn-secondary:hover {
+        border-color: rgba(148, 163, 184, 0.95);
+        background: radial-gradient(circle at top, rgba(17, 24, 39, 0.98), rgba(15, 23, 42, 0.98));
+        color: #e5e7eb;
+      }
+
+      .btn-danger {
+        border-radius: 999px;
+        border: 1px solid rgba(248, 113, 113, 0.7);
+        background: radial-gradient(circle at top left, rgba(248, 113, 113, 0.18), rgba(15, 23, 42, 0.98));
+        color: #fecaca;
+        font-size: 12px;
+        padding: 7px 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        transition: background 0.12s ease, border-color 0.12s ease, transform 0.1s ease;
+      }
+
+      .btn-danger:hover {
+        border-color: rgba(248, 113, 113, 1);
+        background: radial-gradient(circle at top left, rgba(248, 113, 113, 0.32), rgba(15, 23, 42, 0.98));
+        transform: translateY(-0.5px);
+      }
+
+      .btn-primary[disabled],
+      .btn-secondary[disabled],
+      .btn-danger[disabled] {
+        opacity: 0.55;
+        cursor: default;
+        box-shadow: none;
+        transform: none;
+      }
+
+      .video-grid {
+        flex: 1;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-auto-rows: minmax(160px, 1fr);
+        gap: 10px;
+        margin-top: 6px;
+      }
+
+      @media (max-width: 640px) {
+        .video-grid {
+          grid-template-columns: minmax(0, 1fr);
+          grid-auto-rows: minmax(180px, 1.1fr);
+        }
+      }
+
+      .video-tile {
+        position: relative;
+        border-radius: 18px;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at top left, rgba(79, 70, 229, 0.2), transparent 55%),
+          radial-gradient(circle at bottom right, rgba(15, 23, 42, 0.8), #020617);
+        border: 1px solid rgba(31, 41, 55, 0.95);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        isolation: isolate;
+      }
+
+      video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        background-color: #020617;
+      }
+
+      .video-label {
+        position: absolute;
+        left: 10px;
+        bottom: 8px;
+        padding: 4px 9px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.82);
+        border: 1px solid rgba(55, 65, 81, 0.85);
+        font-size: 11px;
+        color: var(--text-soft);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #bfdbfe, #2563eb);
+      }
+
+      .video-placeholder {
+        text-align: center;
+        padding: 22px;
+        font-size: 13px;
+        color: var(--text-soft);
+      }
+
+      .controls-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin-top: 6px;
+      }
+
+      .controls-left,
+      .controls-right {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .pill {
+        border-radius: 999px;
+        border: 1px solid rgba(55, 65, 81, 0.95);
+        padding: 5px 9px;
+        font-size: 11px;
+        color: var(--text-soft);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.98));
+      }
+
+      .pill-strong {
+        border-color: rgba(79, 70, 229, 0.9);
+        background: radial-gradient(circle at top left, rgba(79, 70, 229, 0.32), rgba(15, 23, 42, 0.98));
+        color: #e5e7eb;
+      }
+
+      .pill span.key {
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 10px;
+        color: #6b7280;
+      }
+
+      .meta-section {
+        margin-bottom: 14px;
+      }
+
+      .meta-title {
+        font-size: 13px;
+        font-weight: 500;
+        margin-bottom: 4px;
+        color: #e5e7eb;
+      }
+
+      .meta-body {
+        font-size: 12px;
+        color: var(--text-soft);
+        line-height: 1.5;
+      }
+
+      .meta-body strong {
+        color: #e5e7eb;
+      }
+
+      .meta-list {
+        margin-top: 6px;
+        display: grid;
+        gap: 4px;
+        font-size: 12px;
+      }
+
+      .meta-stat {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 6px 8px;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(31, 41, 55, 0.95);
+      }
+
+      .meta-stat span.label {
+        color: var(--text-soft);
+      }
+
+      .meta-stat span.value {
+        font-variant-numeric: tabular-nums;
+        color: #e5e7eb;
+      }
+
+      .status-bar {
+        margin-top: auto;
+        padding-top: 10px;
+        border-top: 1px dashed rgba(55, 65, 81, 0.85);
+        font-size: 11px;
+        color: var(--text-soft);
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .status-chip {
+        border-radius: 999px;
+        border: 1px solid rgba(55, 65, 81, 0.95);
+        padding: 4px 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.98));
+      }
+
+      .status-chip.ok {
+        border-color: rgba(52, 211, 153, 0.8);
+        color: #bbf7d0;
+        background: radial-gradient(circle at top left, rgba(16, 185, 129, 0.24), rgba(15, 23, 42, 0.98));
+      }
+
+      .mono {
+        font-variant-numeric: tabular-nums;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          'Liberation Mono', 'Courier New', monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div class="pane-video">
+        <div class="header">
+          <div>
+            <div class="badge">
+              <span class="badge-dot"></span>
+              <span>Private WebRTC room</span>
+            </div>
+            <div class="title">Video / audio call in your own infra</div>
+            <div class="subtitle">
+              Share this link with the second participant. No external API needed.
+            </div>
+          </div>
+          <button id="copy-link" class="btn-secondary" type="button">
+            <span>Copy room link</span>
+          </button>
+        </div>
+
+        <div>
+          <div class="room-input-row">
+            <div class="field-shell">
+              <div class="field-label">Room ID</div>
+              <input
+                id="room-id"
+                class="input"
+                placeholder="e.g. team-sync-17"
+                autocomplete="off"
+              />
+            </div>
+            <label class="checkbox-row">
+              <input id="audio-only" type="checkbox" />
+              <span>Audio only</span>
+            </label>
+            <button id="join-btn" class="btn-primary" type="button">
+              <span>Start / join call</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="video-grid">
+          <div class="video-tile">
+            <video id="local-video" autoplay playsinline muted></video>
+            <div class="video-label">
+              <span class="status-dot"></span>
+              <span>Me (local)</span>
+            </div>
+            <div id="local-placeholder" class="video-placeholder">
+              Camera preview will appear here once you join.
+            </div>
+          </div>
+          <div class="video-tile">
+            <video id="remote-video" autoplay playsinline></video>
+            <div class="video-label">
+              <span class="status-dot"></span>
+              <span>Remote participant</span>
+            </div>
+            <div id="remote-placeholder" class="video-placeholder">
+              Waiting for the second participant to join this room.
+            </div>
+          </div>
+        </div>
+
+        <div class="controls-row">
+          <div class="controls-left">
+            <button id="toggle-mic" class="btn-secondary" type="button" disabled>
+              <span>Mute</span>
+            </button>
+            <button id="toggle-camera" class="btn-secondary" type="button" disabled>
+              <span>Stop video</span>
+            </button>
+          </div>
+          <div class="controls-right">
+            <button id="leave-btn" class="btn-danger" type="button" disabled>
+              <span>Leave call</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="pane-meta">
+        <div class="meta-section">
+          <div class="meta-title">How this MVP works</div>
+          <div class="meta-body">
+            Browser clients connect to a small Node.js signaling server you control.
+            Media is P2P via <strong>WebRTC</strong>. For Russia, you can plug in your
+            own <strong>TURN</strong> server instead of any blocked cloud.
+          </div>
+        </div>
+
+        <div class="meta-section">
+          <div class="meta-title">Infra knobs</div>
+          <div class="meta-list">
+            <div class="meta-stat">
+              <span class="label">Signaling</span>
+              <span class="value mono">WebSocket / Socket.IO</span>
+            </div>
+            <div class="meta-stat">
+              <span class="label">Media</span>
+              <span class="value mono">WebRTC P2P (ICE)</span>
+            </div>
+            <div class="meta-stat">
+              <span class="label">ICE servers</span>
+              <span id="ice-desc" class="value mono">customizable</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="meta-section">
+          <div class="meta-title">Next steps for prod</div>
+          <div class="meta-body">
+            - Point calls to a TURN cluster hosted in your region. <br />
+            - Add auth / per-user identity (for Telegram bot or web app). <br />
+            - Log quality metrics (RTT, jitter, packet loss) to tune routing.
+          </div>
+        </div>
+
+        <div class="status-bar">
+          <div class="status-chip ok">
+            <span class="status-dot"></span>
+            <span id="status-text">Idle. Choose a room ID to start.</span>
+          </div>
+          <span id="room-label" class="mono"></span>
+        </div>
+      </aside>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="webrtc.js"></script>
+  </body>
+</html>
+
+
