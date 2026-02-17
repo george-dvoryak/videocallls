@@ -138,15 +138,28 @@ async function ensureLocalStream() {
   if (localStream) return localStream;
   const audioOnly = audioOnlyCheckbox.checked;
   try {
-    // Less aggressive processing to avoid words being cut off:
-    // keep echo cancellation, but relax noise suppression / AGC.
+    // Enhanced audio constraints for better echo cancellation
+    // Enable all processing features to prevent echo while maintaining voice quality
     const audioConstraints = {
       echoCancellation: true,
-      noiseSuppression: false,
-      autoGainControl: false,
+      noiseSuppression: true,  // Re-enabled for better echo reduction
+      autoGainControl: true,   // Re-enabled to normalize volume
+      googEchoCancellation: true,  // Chrome-specific enhanced echo cancellation
+      googAutoGainControl: true,
+      googNoiseSuppression: true,
+      googHighpassFilter: true,   // Filter out low-frequency noise
+      googTypingNoiseDetection: true,  // Reduce keyboard noise
       channelCount: 1,
-      sampleRate: 48000
+      sampleRate: 48000,
+      // Additional constraints for better echo handling
+      latency: 0.01,  // Low latency for real-time communication
+      sampleSize: 16
     };
+
+    // Ensure local video is always muted to prevent feedback
+    if (localVideo) {
+      localVideo.muted = true;
+    }
 
     const videoConstraints = audioOnly
       ? false
@@ -156,11 +169,52 @@ async function ensureLocalStream() {
           frameRate: { ideal: 30, max: 60 }
         };
 
-    localStream = await navigator.mediaDevices.getUserMedia({
-      audio: audioConstraints,
-      video: videoConstraints
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({
+        audio: audioConstraints,
+        video: videoConstraints
+      });
+    } catch (err) {
+      // Fallback: try with simpler constraints if enhanced ones fail
+      console.warn('Enhanced audio constraints failed, trying fallback:', err);
+      const fallbackAudioConstraints = {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        channelCount: 1,
+        sampleRate: 48000
+      };
+      localStream = await navigator.mediaDevices.getUserMedia({
+        audio: fallbackAudioConstraints,
+        video: videoConstraints
+      });
+    }
+
+    // Verify echo cancellation is enabled on audio tracks
+    const audioTracks = localStream.getAudioTracks();
+    audioTracks.forEach((track) => {
+      const settings = track.getSettings();
+      console.log('Audio track settings:', {
+        echoCancellation: settings.echoCancellation,
+        noiseSuppression: settings.noiseSuppression,
+        autoGainControl: settings.autoGainControl
+      });
+      
+      // Force enable echo cancellation if not already enabled
+      if (track.getConstraints) {
+        track.applyConstraints({
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }).catch((err) => {
+          console.warn('Could not apply audio constraints:', err);
+        });
+      }
     });
+
     localVideo.srcObject = localStream;
+    // Ensure local video stays muted to prevent echo
+    localVideo.muted = true;
     showVideoPlaceholders();
     enableCallControls(true);
     updateStatus(audioOnly ? 'Joined with audio only.' : 'Camera + mic active.');
@@ -194,7 +248,16 @@ async function ensurePeerConnection() {
 
   peerConnection.ontrack = (event) => {
     console.log('Got remote track');
-    remoteVideo.srcObject = event.streams[0];
+    const remoteStream = event.streams[0];
+    remoteVideo.srcObject = remoteStream;
+    
+    // Ensure remote video is NOT muted (so you can hear the other person)
+    // and local video stays muted (to prevent echo)
+    remoteVideo.muted = false;
+    if (localVideo) {
+      localVideo.muted = true;
+    }
+    
     showVideoPlaceholders();
   };
 
