@@ -1,7 +1,7 @@
 // Basic WebRTC + Socket.IO signaling for 1:1 calls
 
 const statusText = document.getElementById('status-text');
-const roomLabel = document.getElementById('room-label');
+const roomLabel = document.getElementById('room-label'); // May not exist in simplified UI
 const roomInput = document.getElementById('room-id');
 const audioOnlyCheckbox = document.getElementById('audio-only');
 const joinBtn = document.getElementById('join-btn');
@@ -14,7 +14,7 @@ const localVideo = document.getElementById('local-video');
 const remoteVideo = document.getElementById('remote-video');
 const localPlaceholder = document.getElementById('local-placeholder');
 const remotePlaceholder = document.getElementById('remote-placeholder');
-const iceDescEl = document.getElementById('ice-desc');
+const iceDescEl = document.getElementById('ice-desc'); // May not exist in simplified UI
 
 let socket;
 let currentRoomId = null;
@@ -28,7 +28,9 @@ const ICE_SERVERS = (() => {
   const fromEnv = window.ICE_SERVERS_OVERRIDE; // can be injected server-side if needed
   if (Array.isArray(fromEnv) && fromEnv.length) return fromEnv;
   // Default minimal config – replace with your own TURN infra for Russia
-  iceDescEl.textContent = 'STUN only (replace with TURN in prod)';
+  if (iceDescEl) {
+    iceDescEl.textContent = 'STUN only (replace with TURN in prod)';
+  }
   return [
     { urls: 'stun:stun.l.google.com:19302' }
   ];
@@ -39,7 +41,9 @@ function updateStatus(text) {
 }
 
 function setRoomLabel(roomId) {
-  roomLabel.textContent = roomId ? `room: ${roomId}` : '';
+  if (roomLabel) {
+    roomLabel.textContent = roomId ? `room: ${roomId}` : '';
+  }
 }
 
 function getRoomIdFromURL() {
@@ -305,24 +309,36 @@ async function makeOffer(targetId) {
 }
 
 async function joinRoom() {
-  let roomId = roomInput.value.trim();
-  if (!roomId) {
-    roomId = genRandomRoomId();
-    roomInput.value = roomId;
+  try {
+    console.log('joinRoom called');
+    let roomId = roomInput.value.trim();
+    if (!roomId) {
+      roomId = genRandomRoomId();
+      roomInput.value = roomId;
+    }
+    console.log('Room ID:', roomId);
+
+    setupSocketIfNeeded();
+    console.log('Socket setup complete');
+    
+    await ensureLocalStream();
+    console.log('Local stream obtained');
+
+    currentRoomId = roomId;
+    setRoomLabel(roomId);
+    setRoomIdInURL(roomId);
+
+    updateStatus('Joining room…');
+    socket.emit('join', roomId);
+    console.log('Emitted join event for room:', roomId);
+
+    joinBtn.disabled = true;
+    leaveBtn.disabled = false;
+  } catch (err) {
+    console.error('Error in joinRoom:', err);
+    updateStatus('Failed to join room: ' + err.message);
+    throw err;
   }
-
-  setupSocketIfNeeded();
-  await ensureLocalStream();
-
-  currentRoomId = roomId;
-  setRoomLabel(roomId);
-  setRoomIdInURL(roomId);
-
-  updateStatus('Joining room…');
-  socket.emit('join', roomId);
-
-  joinBtn.disabled = true;
-  leaveBtn.disabled = false;
 }
 
 function leaveRoom() {
@@ -393,7 +409,11 @@ async function copyRoomLink() {
 }
 
 joinBtn.addEventListener('click', () => {
-  joinRoom().catch((err) => console.error(err));
+  console.log('Join button clicked');
+  joinRoom().catch((err) => {
+    console.error('Error joining room:', err);
+    updateStatus('Error joining room. Check console for details.');
+  });
 });
 
 leaveBtn.addEventListener('click', () => {
@@ -414,13 +434,28 @@ copyLinkBtn.addEventListener('click', () => {
 
 // Initialize from URL room if present
 window.addEventListener('load', () => {
+  // Verify critical elements exist
+  if (!joinBtn) {
+    console.error('Join button not found!');
+    return;
+  }
+  if (!roomInput) {
+    console.error('Room input not found!');
+    return;
+  }
+  if (!statusText) {
+    console.error('Status text element not found!');
+    return;
+  }
+  
+  console.log('Page loaded, initializing...');
   const roomFromURL = getRoomIdFromURL();
   if (roomFromURL) {
     roomInput.value = roomFromURL;
-    updateStatus('Ready. Click "Start / join call" to enter the room from URL.');
+    updateStatus('Ready. Click "Join" to enter the room from URL.');
     setRoomLabel(roomFromURL);
   } else {
-    updateStatus('Idle. Choose a room ID to start.');
+    updateStatus('Idle. Choose a room to start.');
   }
   showVideoPlaceholders();
 });
