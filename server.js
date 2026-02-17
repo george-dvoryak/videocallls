@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+const path = require('path');
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
@@ -9,7 +10,12 @@ const PORT = process.env.PORT || 3000;
 
 const app = express();
 app.use(cors());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Explicit root route to serve index.html (more robust across hosts)
+app.get('/', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 const server = http.createServer(app);
 
