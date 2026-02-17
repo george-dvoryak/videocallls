@@ -37,15 +37,15 @@
 
       .shell {
         width: 100%;
-        max-width: 1120px;
-        background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(2, 6, 23, 0.98));
+        max-width: 960px;
+        background: linear-gradient(145deg, rgba(15, 23, 42, 0.97), rgba(2, 6, 23, 0.98));
         border-radius: 24px;
         border: 1px solid rgba(148, 163, 184, 0.18);
         box-shadow:
-          0 18px 60px rgba(15, 23, 42, 0.75),
+          0 18px 60px rgba(15, 23, 42, 0.85),
           0 0 0 1px rgba(15, 23, 42, 0.9);
-        display: grid;
-        grid-template-columns: minmax(0, 2fr) minmax(0, 1.45fr);
+        display: flex;
+        flex-direction: column;
         overflow: hidden;
       }
 
@@ -53,66 +53,32 @@
         body {
           padding: 12px;
         }
-
-        .shell {
-          grid-template-columns: minmax(0, 1fr);
-        }
-
-        .pane-meta {
-          order: -1;
-          border-left: none;
-          border-bottom: 1px solid var(--border);
-        }
       }
 
       .pane-video {
         position: relative;
-        padding: 18px 18px 20px;
+        padding: 16px 16px 18px;
         display: flex;
         flex-direction: column;
-        gap: 14px;
-      }
-
-      .pane-meta {
-        padding: 18px;
-        border-left: 1px solid var(--border);
-        background: radial-gradient(circle at top left, rgba(79, 70, 229, 0.12), transparent 55%);
-        display: flex;
-        flex-direction: column;
+        gap: 12px;
       }
 
       .header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 8px;
+        gap: 10px;
+        margin-bottom: 4px;
       }
 
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        border-radius: 999px;
-        padding: 4px 10px 4px 5px;
-        background: radial-gradient(circle at top left, rgba(52, 211, 153, 0.2), rgba(15, 23, 42, 0.95));
-        border: 1px solid rgba(52, 211, 153, 0.4);
-        font-size: 11px;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--text-soft);
-      }
-
-      .badge-dot {
-        width: 16px;
-        height: 16px;
-        border-radius: 50%;
-        background: radial-gradient(circle at 30% 30%, #bbf7d0, #22c55e);
-        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
+      .brand {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
       }
 
       .title {
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 600;
         color: #e5e7eb;
       }
@@ -126,19 +92,13 @@
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin: 12px 0 8px;
+        margin: 8px 0 4px;
         align-items: center;
       }
 
       .field-shell {
         flex: 1 1 160px;
         position: relative;
-      }
-
-      .field-label {
-        font-size: 11px;
-        color: var(--text-soft);
-        margin-bottom: 4px;
       }
 
       .input {
@@ -224,11 +184,11 @@
         border: 1px solid rgba(248, 113, 113, 0.7);
         background: radial-gradient(circle at top left, rgba(248, 113, 113, 0.18), rgba(15, 23, 42, 0.98));
         color: #fecaca;
-        font-size: 12px;
-        padding: 7px 12px;
+        font-size: 13px;
+        padding: 9px 18px;
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         cursor: pointer;
         transition: background 0.12s ease, border-color 0.12s ease, transform 0.1s ease;
       }
@@ -251,16 +211,16 @@
       .video-grid {
         flex: 1;
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        grid-auto-rows: minmax(160px, 1fr);
+        grid-template-columns: minmax(0, 3fr) minmax(0, 1.5fr);
+        grid-auto-rows: minmax(220px, 1fr);
         gap: 10px;
-        margin-top: 6px;
+        margin-top: 8px;
       }
 
       @media (max-width: 640px) {
         .video-grid {
           grid-template-columns: minmax(0, 1fr);
-          grid-auto-rows: minmax(180px, 1.1fr);
+          grid-auto-rows: minmax(200px, 1.1fr);
         }
       }
 
@@ -316,119 +276,20 @@
 
       .controls-row {
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
-        gap: 8px;
-        margin-top: 6px;
-      }
-
-      .controls-left,
-      .controls-right {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        flex-wrap: wrap;
-      }
-
-      .pill {
-        border-radius: 999px;
-        border: 1px solid rgba(55, 65, 81, 0.95);
-        padding: 5px 9px;
-        font-size: 11px;
-        color: var(--text-soft);
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.98));
-      }
-
-      .pill-strong {
-        border-color: rgba(79, 70, 229, 0.9);
-        background: radial-gradient(circle at top left, rgba(79, 70, 229, 0.32), rgba(15, 23, 42, 0.98));
-        color: #e5e7eb;
-      }
-
-      .pill span.key {
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        font-size: 10px;
-        color: #6b7280;
-      }
-
-      .meta-section {
-        margin-bottom: 14px;
-      }
-
-      .meta-title {
-        font-size: 13px;
-        font-weight: 500;
-        margin-bottom: 4px;
-        color: #e5e7eb;
-      }
-
-      .meta-body {
-        font-size: 12px;
-        color: var(--text-soft);
-        line-height: 1.5;
-      }
-
-      .meta-body strong {
-        color: #e5e7eb;
-      }
-
-      .meta-list {
-        margin-top: 6px;
-        display: grid;
-        gap: 4px;
-        font-size: 12px;
-      }
-
-      .meta-stat {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        padding: 6px 8px;
-        border-radius: 10px;
-        background: rgba(15, 23, 42, 0.85);
-        border: 1px solid rgba(31, 41, 55, 0.95);
-      }
-
-      .meta-stat span.label {
-        color: var(--text-soft);
-      }
-
-      .meta-stat span.value {
-        font-variant-numeric: tabular-nums;
-        color: #e5e7eb;
-      }
-
-      .status-bar {
-        margin-top: auto;
+        gap: 12px;
+        margin-top: 10px;
         padding-top: 10px;
-        border-top: 1px dashed rgba(55, 65, 81, 0.85);
-        font-size: 11px;
-        color: var(--text-soft);
+        border-top: 1px solid rgba(31, 41, 55, 0.8);
+      }
+
+      .controls-group {
         display: flex;
-        justify-content: space-between;
-        gap: 8px;
         align-items: center;
-      }
-
-      .status-chip {
-        border-radius: 999px;
-        border: 1px solid rgba(55, 65, 81, 0.95);
-        padding: 4px 8px;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.98));
-      }
-
-      .status-chip.ok {
-        border-color: rgba(52, 211, 153, 0.8);
-        color: #bbf7d0;
-        background: radial-gradient(circle at top left, rgba(16, 185, 129, 0.24), rgba(15, 23, 42, 0.98));
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
       }
 
       .mono {
@@ -442,40 +303,31 @@
     <div class="shell">
       <div class="pane-video">
         <div class="header">
-          <div>
-            <div class="badge">
-              <span class="badge-dot"></span>
-              <span>Private WebRTC room</span>
-            </div>
-            <div class="title">Video / audio call in your own infra</div>
-            <div class="subtitle">
-              Share this link with the second participant. No external API needed.
-            </div>
+          <div class="brand">
+            <div class="title">VideoCall</div>
+            <div class="subtitle" id="status-text">Idle. Choose a room to start.</div>
           </div>
           <button id="copy-link" class="btn-secondary" type="button">
-            <span>Copy room link</span>
+            <span>Copy link</span>
           </button>
         </div>
 
-        <div>
-          <div class="room-input-row">
-            <div class="field-shell">
-              <div class="field-label">Room ID</div>
-              <input
-                id="room-id"
-                class="input"
-                placeholder="e.g. team-sync-17"
-                autocomplete="off"
-              />
-            </div>
-            <label class="checkbox-row">
-              <input id="audio-only" type="checkbox" />
-              <span>Audio only</span>
-            </label>
-            <button id="join-btn" class="btn-primary" type="button">
-              <span>Start / join call</span>
-            </button>
+        <div class="room-input-row">
+          <div class="field-shell">
+            <input
+              id="room-id"
+              class="input"
+              placeholder="Room name (e.g. team-sync)"
+              autocomplete="off"
+            />
           </div>
+          <label class="checkbox-row">
+            <input id="audio-only" type="checkbox" />
+            <span>Audio only</span>
+          </label>
+          <button id="join-btn" class="btn-primary" type="button">
+            <span>Join</span>
+          </button>
         </div>
 
         <div class="video-grid">
@@ -483,86 +335,38 @@
             <video id="local-video" autoplay playsinline muted></video>
             <div class="video-label">
               <span class="status-dot"></span>
-              <span>Me (local)</span>
+              <span>Me</span>
             </div>
             <div id="local-placeholder" class="video-placeholder">
-              Camera preview will appear here once you join.
+              Your camera preview will appear here after you join the room.
             </div>
           </div>
           <div class="video-tile">
             <video id="remote-video" autoplay playsinline></video>
             <div class="video-label">
               <span class="status-dot"></span>
-              <span>Remote participant</span>
+              <span>Other person</span>
             </div>
             <div id="remote-placeholder" class="video-placeholder">
-              Waiting for the second participant to join this room.
+              Waiting for the other person to join this room.
             </div>
           </div>
         </div>
 
         <div class="controls-row">
-          <div class="controls-left">
+          <div class="controls-group">
             <button id="toggle-mic" class="btn-secondary" type="button" disabled>
               <span>Mute</span>
             </button>
             <button id="toggle-camera" class="btn-secondary" type="button" disabled>
               <span>Stop video</span>
             </button>
-          </div>
-          <div class="controls-right">
             <button id="leave-btn" class="btn-danger" type="button" disabled>
               <span>Leave call</span>
             </button>
           </div>
         </div>
       </div>
-
-      <aside class="pane-meta">
-        <div class="meta-section">
-          <div class="meta-title">How this MVP works</div>
-          <div class="meta-body">
-            Browser clients connect to a small Node.js signaling server you control.
-            Media is P2P via <strong>WebRTC</strong>. For Russia, you can plug in your
-            own <strong>TURN</strong> server instead of any blocked cloud.
-          </div>
-        </div>
-
-        <div class="meta-section">
-          <div class="meta-title">Infra knobs</div>
-          <div class="meta-list">
-            <div class="meta-stat">
-              <span class="label">Signaling</span>
-              <span class="value mono">WebSocket / Socket.IO</span>
-            </div>
-            <div class="meta-stat">
-              <span class="label">Media</span>
-              <span class="value mono">WebRTC P2P (ICE)</span>
-            </div>
-            <div class="meta-stat">
-              <span class="label">ICE servers</span>
-              <span id="ice-desc" class="value mono">customizable</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="meta-section">
-          <div class="meta-title">Next steps for prod</div>
-          <div class="meta-body">
-            - Point calls to a TURN cluster hosted in your region. <br />
-            - Add auth / per-user identity (for Telegram bot or web app). <br />
-            - Log quality metrics (RTT, jitter, packet loss) to tune routing.
-          </div>
-        </div>
-
-        <div class="status-bar">
-          <div class="status-chip ok">
-            <span class="status-dot"></span>
-            <span id="status-text">Idle. Choose a room ID to start.</span>
-          </div>
-          <span id="room-label" class="mono"></span>
-        </div>
-      </aside>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
