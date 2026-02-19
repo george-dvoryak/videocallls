@@ -142,22 +142,29 @@ async function ensureLocalStream() {
   if (localStream) return localStream;
   const audioOnly = audioOnlyCheckbox.checked;
   try {
-    // Enhanced audio constraints for better echo cancellation
+    // Enhanced audio constraints for aggressive echo cancellation
     // Enable all processing features to prevent echo while maintaining voice quality
     const audioConstraints = {
       echoCancellation: true,
-      noiseSuppression: true,  // Re-enabled for better echo reduction
-      autoGainControl: true,   // Re-enabled to normalize volume
-      googEchoCancellation: true,  // Chrome-specific enhanced echo cancellation
+      noiseSuppression: true,
+      autoGainControl: true,
+      // Chrome/Edge specific enhanced echo cancellation
+      googEchoCancellation: true,
       googAutoGainControl: true,
       googNoiseSuppression: true,
-      googHighpassFilter: true,   // Filter out low-frequency noise
-      googTypingNoiseDetection: true,  // Reduce keyboard noise
+      googHighpassFilter: true,
+      googTypingNoiseDetection: true,
+      googNoiseReduction: true,
+      // Acoustic echo cancellation mode (more aggressive)
+      googEchoCancellation2: true,
+      googDAEchoCancellation: true,  // Double-talk aware echo cancellation
+      // Mobile-specific optimizations
       channelCount: 1,
       sampleRate: 48000,
-      // Additional constraints for better echo handling
-      latency: 0.01,  // Low latency for real-time communication
-      sampleSize: 16
+      latency: 0.01,
+      sampleSize: 16,
+      // Additional echo reduction
+      suppressLocalAudioPlayback: true  // Prevents local audio from being captured
     };
 
     // Ensure local video is always muted to prevent feedback
@@ -165,8 +172,18 @@ async function ensureLocalStream() {
       localVideo.muted = true;
     }
 
+    // Mobile-optimized video constraints
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     const videoConstraints = audioOnly
       ? false
+      : isMobile
+      ? {
+          // Lower resolution for mobile to save bandwidth and improve performance
+          width: { ideal: 640, max: 1280 },
+          height: { ideal: 480, max: 720 },
+          frameRate: { ideal: 24, max: 30 },
+          facingMode: 'user' // Front camera on mobile
+        }
       : {
           width: { ideal: 1280, max: 1920 },
           height: { ideal: 720, max: 1080 },
@@ -194,26 +211,38 @@ async function ensureLocalStream() {
       });
     }
 
-    // Verify echo cancellation is enabled on audio tracks
+    // Verify and enforce echo cancellation on audio tracks
     const audioTracks = localStream.getAudioTracks();
     audioTracks.forEach((track) => {
       const settings = track.getSettings();
       console.log('Audio track settings:', {
         echoCancellation: settings.echoCancellation,
         noiseSuppression: settings.noiseSuppression,
-        autoGainControl: settings.autoGainControl
+        autoGainControl: settings.autoGainControl,
+        sampleRate: settings.sampleRate,
+        channelCount: settings.channelCount
       });
       
-      // Force enable echo cancellation if not already enabled
-      if (track.getConstraints) {
+      // Aggressively enforce echo cancellation constraints
+      const enforcedConstraints = {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        googEchoCancellation: true,
+        googDAEchoCancellation: true
+      };
+      
+      track.applyConstraints(enforcedConstraints).catch((err) => {
+        console.warn('Could not apply all audio constraints, trying basic set:', err);
+        // Fallback to basic echo cancellation
         track.applyConstraints({
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true
-        }).catch((err) => {
-          console.warn('Could not apply audio constraints:', err);
+        }).catch((fallbackErr) => {
+          console.warn('Could not apply basic audio constraints:', fallbackErr);
         });
-      }
+      });
     });
 
     localVideo.srcObject = localStream;
@@ -261,6 +290,18 @@ async function ensurePeerConnection() {
     if (localVideo) {
       localVideo.muted = true;
     }
+    
+    // Mobile-specific: Set audio output to speaker/earpiece appropriately
+    if (remoteVideo.setSinkId && 'setSinkId' in remoteVideo) {
+      // On mobile, prefer speaker for better call quality
+      // This helps prevent echo by routing audio away from the microphone
+      remoteVideo.setSinkId('').catch((err) => {
+        console.log('Could not set audio sink (may not be supported):', err);
+      });
+    }
+    
+    // Ensure audio plays through the correct output device
+    remoteVideo.volume = 1.0;
     
     showVideoPlaceholders();
   };
